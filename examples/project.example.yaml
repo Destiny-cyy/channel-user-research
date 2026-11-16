@@ -1,0 +1,44 @@
+# project.yaml —— 项目级参数。复制到工作区根目录，与 channels.yaml 同级。
+# 改这里不会动 skill 本身；换游戏只需改 game_key 与时间窗。
+game_key: "{{GAME_KEY}}"
+display_name: "{{GAME_NAME}}"
+
+# 趋势必须基于至少两个「等长」时间窗，单点不给趋势结论
+time_windows:
+  - id: W1
+    start: "2026-10-01"
+    end: "2026-10-14"
+  - id: W2
+    start: "2026-10-15"
+    end: "2026-10-28"
+
+privacy:
+  redact_pii: true              # 快照/日志脱敏默认开；评论原句仍逐字保留
+
+report:
+  audience: "运营 / 发行"
+  include_pii: false            # 报告不出现昵称、头像、渠道用户 ID 等可识别信息
+  causal_wording: forbidden     # 只写「同期出现」，禁写「导致/因为」
+  fixed_disclaimer: "评论是自选样本，占比只代表评论语料内部结构，不能外推全体玩家比例"
+
+analysis:
+  n_clusters: 5                 # KMeans 簇数（轻量本地版）
+  min_topic_docs: 3             # 少于此数的簇不单独成主题
+  small_sample_threshold: 20    # n<20 不给百分比，只给方向
+  indicative_threshold: 50      # 20<=n<50 标「仅供参考」
+  equal_length_windows_required: true
+  outlier_topic_id: -1          # 离群点单列，不强行归并
+
+# 机会点排序权重：初始建议值，业务可一票否决；改这里会原样写进报告
+opportunity_weights:
+  impact: 0.35                  # 影响面：条数 × 占比
+  severity: 0.30                # 严重度：同主题 1–2 星占比 vs 4–5 星占比
+  actionability: 0.20           # 可行动性
+  business_value: 0.15          # 商业价值
+  note: "权重之和应为 1.0；这是主观设定，业务可直接否决或改这里重跑"
+
+verification:
+  require_grounding_check: true
+  forbid_two_decimal_pct: true
+  forbid_zero_as_missing: true
+  sha256_before_after: true

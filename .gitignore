@@ -1,0 +1,13 @@
+# Runtime workspaces may contain real player comments, account exports, and reports.
+data/
+out/
+workspace/
+**/data/inbox/
+**/snapshots/
+
+__pycache__/
+*.py[cod]
+*.log
+*.tmp
+.DS_Store
+Thumbs.db

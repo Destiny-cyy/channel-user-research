@@ -1,0 +1,29 @@
+# channel-user-research 依赖清单
+#
+# 许可证白名单：只接受 MIT / Apache-2.0 / BSD-3-Clause。
+# LGPL / AGPL / GPL 一律不进运行时，只作方法论参考。
+#
+# 【明确不装，别手滑加上】
+#   torch / transformers          —— 需要 GPU 或很重的依赖，本 skill 走轻量本地 + AI 大脑
+#   umap-learn / hdbscan          —— 依赖 numba / llvmlite，Windows 上编译与版本冲突高发
+#   numba / llvmlite              —— 同上
+#   默认安装的重型主题模型        —— 会拉取多项编译依赖；MVP 不装，确需时单独评估
+#   强制更高 Python 版本的工具    —— 与本项目的 Python 3.11 基线冲突
+#   强制数据库与容器的工具        —— 超出轻量离线闭环范围
+#   渠道专用非官方抓取器          —— {{CHANNEL_E}} 服务条款禁止自动化访问，内部接口存在合规风险
+#   商业 SaaS 类研究工具           —— 依赖外部商业服务，本包不接入
+# 本 skill 不申请任何外部 API key：主题命名与洞察由会话自带 LLM 承担。
+#
+# 安装（在 skill 根目录执行）：
+#   python -m pip install -r requirements.txt
+
+# —— 必需 ——
+requests>=2.31,<3          # Apache-2.0  只读 HTTP 请求
+PyYAML>=6.0                # MIT         读 channels.yaml / project.yaml
+pandas>=2.0                # BSD-3-Clause 表格聚合
+scikit-learn>=1.4          # BSD-3-Clause TF-IDF(char_wb) / NMF / KMeans；要求 Python>=3.11
+openpyxl>=3.1              # MIT         Excel 出口
+
+# —— 可选（想开哪行再去掉 #；默认全关，保证纯 CPU 零负担） ——
+# model2vec>=0.3           # MIT   纯 NumPy 静态嵌入，中文主题质量更好，无 GPU 无大模型
+# jieba>=0.42              # MIT   中文分词；默认不用，字符 n-gram 已零依赖可用

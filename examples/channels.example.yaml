@@ -1,0 +1,149 @@
+# channels.yaml —— 加渠道唯一要改的那一份
+# 复制到你的工作区根目录（与 project.yaml 同级），不要直接改 skill 目录里的模板。
+# 红线边界见 references/redlines.md；本档允许自有账号 + 自有 App 官方接口，其余红线全保留。
+version: 1
+
+defaults:
+  rate_limit_qps: 0.3          # 全局频率上限，克制优先
+  random_jitter: true           # 请求带随机抖动
+  max_pages: 5                  # 单次最多翻几页
+  page_size: 100                # 单页上限；接入时不得超过目标渠道条款
+  retry_on: [429, 500, 502, 503, 504]   # 只对 5xx/429 退避，其余不重试
+  timeout_seconds: 15
+  snapshot: true                # 原始响应留副本
+  redact_pii: true              # 脱敏默认开
+  enabled_default: false        # 未显式 enabled 的渠道一律关
+  empty_result_is_alert: true   # 0 条 ≠ 没有，必须告警
+
+channels:
+  # —— 默认开：官方公开接口 ——
+  - key: channel_a_reviews
+    name: "{{CHANNEL_A}} 公开评论"
+    enabled: true
+    mode: official_api
+    adapter: public_json_api
+    entry: "https://api.example.invalid/reviews"
+    params:
+      game_id: "{{GAME_ID}}"
+      language: "{{LANGUAGE}}"
+      cursor_param: cursor
+      page_size_param: limit
+    metrics: []
+    reviews:
+      enabled: true
+      id_field: id
+      text_field: text
+      rating_field: rating
+      time_field: published_at
+      playtime_field: author.playtime_hours
+      votes_field: votes
+      early_access_field: early_access
+    compliance:
+      require_human_confirm: false
+      compliance_tag: public_anonymous
+      tos_note: "仅用于已确认允许自动读取的公开接口；只读、游标分页，429 即停"
+
+  - key: channel_d_public
+    name: "{{CHANNEL_D}} 公开评论源"
+    enabled: true
+    mode: public_html
+    adapter: public_json_api
+    entry: "https://feeds.example.invalid/{{GAME_ID}}/reviews.json"
+    params:
+      runtime_probe: true
+      page_size: 50
+    metrics: []
+    reviews:
+      enabled: true
+      id_field: id
+      text_field: text
+      rating_field: rating
+    compliance:
+      require_human_confirm: false
+      compliance_tag: public_anonymous
+      tos_note: "公开 RSS，需运行时探测；返回 200 但 entry 为空时按空结果告警，不得判为『本周没评论』"
+
+  # —— 本档放宽项：仅限自己名下 App 的官方后台，由账号持有人本人执行 ——
+  - key: owned_backend_a
+    name: 自有 App · {{OWNED_CHANNEL_BACKEND}} 评论
+    enabled: false               # 确认是你自己名下的 App 再打开
+    mode: own_backend
+    adapter: manual_import
+    entry: "data/inbox/owned_backend_a/"
+    params:
+      filled_by: "<填填写人>"
+    metrics: [rating, review_count]
+    reviews:
+      enabled: true
+    compliance:
+      require_human_confirm: true
+      compliance_tag: manual_confirmed
+      tos_note: "仅限自有 App；账号持有人本人操作，平台条款责任由使用方承担"
+
+  - key: owned_backend_b
+    name: 自有 App · {{OWNED_CHANNEL_API}} 评论
+    enabled: false
+    mode: own_backend
+    adapter: manual_import
+    entry: "data/inbox/owned_backend_b/"
+    params:
+      filled_by: "<填填写人>"
+    metrics: [rating, review_count]
+    reviews:
+      enabled: true
+    compliance:
+      require_human_confirm: true
+      compliance_tag: manual_confirmed
+      tos_note: "仅限自有 App；不使用未授权页面接口或逆向协议"
+
+  # —— 默认关：无官方接口 / 条款风险，只走人工投放 ——
+  - key: channel_b_manual
+    name: "{{CHANNEL_B}}"
+    enabled: false
+    mode: manual_only
+    adapter: manual_import
+    entry: "data/inbox/channel_b_manual/"
+    params:
+      filled_by: "<填填写人>"
+    metrics: [reservations, rating]
+    reviews:
+      enabled: true
+    compliance:
+      require_human_confirm: true
+      compliance_tag: manual_confirmed
+      tos_note: "无官方公开评论接口；自动采集默认关，只投公开匿名可见的导出数据"
+
+  - key: channel_c_manual
+    name: "{{CHANNEL_C}}"
+    enabled: false
+    mode: manual_only
+    adapter: manual_import
+    entry: "data/inbox/channel_c_manual/"
+    params:
+      filled_by: "<填填写人>"
+    metrics: [reservations]
+    reviews:
+      enabled: true
+    compliance:
+      require_human_confirm: true
+      compliance_tag: manual_confirmed
+      tos_note: "无可靠高星开源抓取器，部分实现要求填 cookie（踩红线）；只走人工投放"
+
+  - key: channel_e_page
+    name: "{{CHANNEL_E}} 页面（禁用）"
+    enabled: false
+    mode: disabled
+    adapter: public_html
+    entry: ""
+    compliance:
+      require_human_confirm: true
+      tos_note: "服务条款未允许自动化访问，硬禁用"
+
+slices:
+  # 先定 slice 再聚类，防「先聚类再找差异」。见 references/analysis-playbook.md
+  - channel
+  - rating_band
+  - version
+  - time_window
+  - playtime_band
+  - lang

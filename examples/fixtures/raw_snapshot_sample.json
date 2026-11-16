@@ -1,0 +1,17 @@
+{
+  "_comment": "脱敏后的公开接口响应副本样例；虚构内容，非真实采集",
+  "request_url": "https://example.invalid/api/reviews?game_id=<redacted>&limit=100",
+  "method": "GET",
+  "http_status": 200,
+  "captured_at": "2026-10-20T09:00:00",
+  "payload": {
+    "results": [
+      {
+        "recommendationid": "R0001",
+        "review": "虚构评论文本",
+        "voted_up": true,
+        "votes_up": 3
+      }
+    ]
+  }
+}

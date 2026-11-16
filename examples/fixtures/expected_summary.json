@@ -1,0 +1,24 @@
+{
+  "_comment": "一键试跑的期望断言，供 ur_verify.py 核对",
+  "min_reviews": 60,
+  "min_metrics": 20,
+  "min_topic_count": 3,
+  "report_required_headings": [
+    "数据事实",
+    "模型推断",
+    "运营建议"
+  ],
+  "report_forbidden_phrases": [
+    "导致",
+    "因为"
+  ],
+  "required_disclaimer_fragment": "不能外推全体玩家比例",
+  "required_warning_fragment": "样本不足",
+  "cross_matrix_min_cells": 6,
+  "grounding_negative_case": {
+    "fake_review_id": "FAKE-ID-DOES-NOT-EXIST",
+    "must_be_dropped": true
+  },
+  "forbid_two_decimal_pct": true,
+  "forbid_zero_as_missing": true
+}
